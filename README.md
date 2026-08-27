@@ -1,121 +1,154 @@
-Implementation-of-SARSA-Control-Algorithm-using-Gymnasium
-Aim
+# Implementation of SARSA Control Algorithm using Gymnasium
+
+## Aim
 
 To implement the SARSA control algorithm using the Gymnasium FrozenLake-v1 environment and learn an action-value function that helps the agent select better actions for reaching the goal state while avoiding holes.
 
-Problem Statement
+## Problem Statement
 
 To develop a reinforcement learning agent using the SARSA (State-Action-Reward-State-Action) algorithm. The agent must learn the best actions in a custom 4×4 FrozenLake environment, starting from state 12 and reaching the goal state 3 while avoiding the hole states.
 
-Software Requirements
-Python 3.x
-Google Colab / Jupyter Notebook
-Gymnasium
-NumPy
-Matplotlib
-Environment Description
+## Software Requirements
+
+* Python 3.x
+* Google Colab / Jupyter Notebook
+* Gymnasium
+* NumPy
+* Matplotlib
+
+## Environment Description
 
 A custom 4×4 FrozenLake environment is used.
 
-Custom Map
+### Custom Map
+
+```text
 F F F G
 F H F H
 F F F F
 S F F F
-State Representation
- 0   1   2   3
- 4   5   6   7
- 8   9  10  11
+```
+
+### State Representation
+
+```text
+0   1   2   3
+4   5   6   7
+8   9   10  11
 12  13  14  15
-Start state: 12
-Goal state: 3
-Hole states: 5, 7, 11
-F = Frozen surface
-H = Hole
-S = Start
-G = Goal
+```
 
-The environment uses is_slippery=False, so the agent moves exactly in the direction selected.
+* **Start state:** 12
+* **Goal state:** 3
+* **Hole states:** 5, 7, 11
+* **F:** Frozen surface
+* **H:** Hole
+* **S:** Start
+* **G:** Goal
 
-Actions
-Action	Direction
-0	Left
-1	Down
-2	Right
-3	Up
-Theory
+The environment uses `is_slippery=False`, so the agent moves exactly in the direction selected.
+
+## Actions
+
+| Action | Direction |
+| ------ | --------- |
+| 0      | Left      |
+| 1      | Down      |
+| 2      | Right     |
+| 3      | Up        |
+
+## Theory
 
 SARSA stands for:
 
-$$ S_t, A_t, R_{t+1}, S_{t+1}, A_{t+1} $$
+```text
+Sₜ, Aₜ, Rₜ₊₁, Sₜ₊₁, Aₜ₊₁
+```
 
-SARSA is an on-policy Temporal Difference reinforcement learning algorithm. It updates the Q-value using the action actually selected in the next state.
+SARSA is an **on-policy Temporal Difference reinforcement learning algorithm**. It updates the Q-value using the action actually selected in the next state.
 
-The SARSA update rule is:
+### SARSA Update Rule
 
-$$ Q(S_t,A_t) \leftarrow Q(S_t,A_t) + \alpha \left[ R_{t+1} + \gamma Q(S_{t+1},A_{t+1}) - Q(S_t,A_t) \right] $$
+```text
+Q(Sₜ, Aₜ) ← Q(Sₜ, Aₜ) +
+α [Rₜ₊₁ + γQ(Sₜ₊₁, Aₜ₊₁) − Q(Sₜ, Aₜ)]
+```
 
-Where:
+### Symbols
 
-Symbol	Meaning
-$S_t$	Current state
-$A_t$	Current action
-$R_{t+1}$	Reward received after taking action $A_t$
-$S_{t+1}$	Next state
-$A_{t+1}$	Next action selected using the current policy
-$\alpha$	Learning rate
-$\gamma$	Discount factor
-$Q(s,a)$	Action-value function
-Parameters Used
-Parameter	Value
-Number of episodes	50,000
-Maximum steps per episode	100
-Learning rate ($\alpha$)	0.1
-Discount factor ($\gamma$)	0.99
-Initial epsilon	1.0
-Minimum epsilon	0.05
-Epsilon decay	0.9999
-Epsilon-Greedy Policy
+| Symbol   | Meaning                                       |
+| -------- | --------------------------------------------- |
+| `Sₜ`     | Current state                                 |
+| `Aₜ`     | Current action                                |
+| `Rₜ₊₁`   | Reward received after taking action `Aₜ`      |
+| `Sₜ₊₁`   | Next state                                    |
+| `Aₜ₊₁`   | Next action selected using the current policy |
+| `α`      | Learning rate                                 |
+| `γ`      | Discount factor                               |
+| `Q(s,a)` | Action-value function                         |
+
+## Parameters Used
+
+| Parameter                 |  Value |
+| ------------------------- | -----: |
+| Number of episodes        | 50,000 |
+| Maximum steps per episode |    100 |
+| Learning rate (`α`)       |    0.1 |
+| Discount factor (`γ`)     |   0.99 |
+| Initial epsilon           |    1.0 |
+| Minimum epsilon           |   0.05 |
+| Epsilon decay             | 0.9999 |
+
+## Epsilon-Greedy Policy
 
 SARSA uses an epsilon-greedy policy for action selection.
 
-With probability $\epsilon$, the agent explores by selecting a random action.
+* With probability `ε`, the agent **explores** by selecting a random action.
+* With probability `1 − ε`, the agent **exploits** by selecting the action with the highest Q-value.
 
-With probability $1-\epsilon$, the agent exploits by selecting the action with the highest Q-value.
+```text
+a =
+{
+    random action,              with probability ε
 
-$$ a = \begin{cases} \text{random action}, & \text{with probability } \epsilon \\ \arg\max_a Q(s,a), & \text{with probability } 1-\epsilon \end{cases} $$
+    argmax Q(s,a),               with probability 1 − ε
+}
+```
 
-Initially, epsilon = 1.0, so the agent performs more exploration.
+Initially, `epsilon = 1.0`, so the agent performs more exploration.
 
 After every episode, epsilon is reduced using:
 
-epsilon = max(
-    epsilon_min,
-    epsilon * epsilon_decay
-)
+```python
+epsilon = max(epsilon_min, epsilon * epsilon_decay)
+```
 
 This gradually changes the agent from exploration to exploitation.
 
-Algorithm
-Create the custom 4×4 FrozenLake environment.
-Set the start state as 12 and the goal state as 3.
-Initialize the Q-table with zeros.
-Set the learning parameters $\alpha$, $\gamma$, and $\epsilon$.
-Reset the environment at the beginning of each episode.
-Select an initial action using the epsilon-greedy policy.
-Execute the selected action.
-Observe the next state and reward.
-Select the next action using the epsilon-greedy policy.
-Update the Q-value using the SARSA equation.
-Move to the next state and next action.
-Repeat until the episode terminates.
-Reduce epsilon after every episode.
-Store the reward obtained in each episode.
-Calculate the state-value function from the learned Q-table.
-Generate the learned policy using the maximum Q-value.
-Calculate the average reward over the last 1000 episodes.
-Plot the learning curve.
-Python Program
+## Algorithm
+
+1. Create the custom 4×4 FrozenLake environment.
+2. Set the start state as 12 and the goal state as 3.
+3. Initialize the Q-table with zeros.
+4. Set the learning parameters `α`, `γ`, and `ε`.
+5. Reset the environment at the beginning of each episode.
+6. Select an initial action using the epsilon-greedy policy.
+7. Execute the selected action.
+8. Observe the next state and reward.
+9. Select the next action using the epsilon-greedy policy.
+10. Update the Q-value using the SARSA equation.
+11. Move to the next state and next action.
+12. Repeat until the episode terminates.
+13. Reduce epsilon after every episode.
+14. Store the reward obtained in each episode.
+15. Calculate the state-value function from the learned Q-table.
+16. Generate the learned policy using the maximum Q-value.
+17. Calculate the average reward over the last 1000 episodes.
+18. Plot the learning curve.
+
+## Python Program
+
+```python
 import gymnasium as gym
 import numpy as np
 import matplotlib.pyplot as plt
@@ -123,6 +156,7 @@ import matplotlib.pyplot as plt
 # -------------------------------------------------
 # Create FrozenLake Environment
 # -------------------------------------------------
+
 custom_map = [
     "FFFG",
     "FHFH",
@@ -139,7 +173,6 @@ env = gym.make(
 start_state = 12
 goal_state = 3
 
-
 # -------------------------------------------------
 # Hyperparameters
 # -------------------------------------------------
@@ -154,15 +187,14 @@ epsilon = 1.0
 epsilon_min = 0.05
 epsilon_decay = 0.9999
 
-
 # -------------------------------------------------
 # Initialize Q-table
 # -------------------------------------------------
+
 n_states = env.observation_space.n
 n_actions = env.action_space.n
 
 Q = np.zeros((n_states, n_actions))
-
 
 # -------------------------------------------------
 # Epsilon-Greedy Action Selection
@@ -174,7 +206,6 @@ def epsilon_greedy_action(state, epsilon):
         return env.action_space.sample()
     else:
         return np.argmax(Q[state])
-
 
 # -------------------------------------------------
 # SARSA Training
@@ -230,17 +261,18 @@ for episode in range(num_episodes):
 
     episode_rewards.append(total_reward)
 
-
 # -------------------------------------------------
 # Display Functions
 # -------------------------------------------------
 
 def print_value_function(values):
+
     print("\nEstimated State-Value Function:")
     print(np.round(values.reshape(4, 4), 3))
 
 
 def print_policy(policy):
+
     action_symbols = {
         0: "L",
         1: "D",
@@ -254,7 +286,6 @@ def print_policy(policy):
 
     print("\nLearned Policy:")
     print(policy_grid)
-
 
 # -------------------------------------------------
 # Output
@@ -286,7 +317,6 @@ print(
 print("Name: Danica Christa")
 print("Reg no: 212223240022")
 
-
 # -------------------------------------------------
 # Plot Learning Curve
 # -------------------------------------------------
@@ -311,42 +341,36 @@ plt.grid(True)
 plt.show()
 
 env.close()
-Output
-Start State: 12
-Goal State: 3
+```
 
-Final Q-table:
+## Output
 
-[Q-table values]
+<img width="473" height="566" alt="image" src="https://github.com/user-attachments/assets/500b965f-eabb-4abc-bd1f-54839a8db874" />
 
-
-Estimated State-Value Function:
-
-[State-value values]
+<img width="667" height="426" alt="image" src="https://github.com/user-attachments/assets/c1653dcb-2d1e-48e0-a1bd-4b48867e2399" />
 
 
-Learned Policy:
 
-[Policy values]
-
-
-Average reward over last 1000 episodes: ...
-
-
-Name: Danica Christa
-Reg no: 212223240022
+## Possible Successful Path
 
 A possible successful path learned by the agent is:
 
+```text
 12 → 13 → 14 → 10 → 6 → 2 → 3
+```
 
-Corresponding actions:
+### Corresponding Actions
 
+```text
 Right → Right → Up → Up → Up → Right
-Result
+```
+
+## Result
 
 The SARSA control algorithm was successfully implemented using the Gymnasium FrozenLake environment. The agent learned Q-values through repeated interaction with the environment and gradually learned a policy to move from start state 12 to goal state 3 while avoiding the holes.
 
-Inference
+## Inference
 
-The experiment demonstrates that SARSA can learn an effective policy through trial and error. Initially, the agent explores the environment using a high epsilon value. As epsilon decreases, the agent increasingly selects actions with higher Q-values. The Q-table stores the expected value of each state-action pair, while the learned policy selects the action with the maximum Q-value. The learning curve shows how the agent's performance changes during training, demonstrating the learning process of the SARSA algorithm.
+The experiment demonstrates that SARSA can learn an effective policy through trial and error. Initially, the agent explores the environment using a high epsilon value. As epsilon decreases, the agent increasingly selects actions with higher Q-values.
+
+The Q-table stores the expected value of each state-action pair, while the learned policy selects the action with the maximum Q-value. The learning curve shows how the agent's performance changes during training, demonstrating the learning process of the SARSA algorithm.
